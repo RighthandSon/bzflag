@@ -210,6 +210,9 @@ void            ServerCommandKey::updatePrompt()
         case LagStats:
             hud->setComposing("Lag / Ping Stats", false);
             break;
+        case Motto:
+            hud->setComposing("Change Motto", false);
+            break;
         case FlagHistory:
             hud->setComposing("Flag History", false);
             break;

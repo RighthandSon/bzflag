@@ -54,6 +54,7 @@ private:
         FlagHistory,
         IdleStats,
         ClientQuery,
+        Motto,
         LagStats,
         Report,
         LagWarn,

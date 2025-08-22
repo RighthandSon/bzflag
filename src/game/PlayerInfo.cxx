@@ -215,17 +215,11 @@ bool PlayerInfo::processEnter ( uint16_t &rejectCode, char *rejectMsg )
     }
 
     // make sure the motto is not obscene/filtered
-    if (callSignFiltering)
+    if (filterMotto(motto))
     {
-        logDebugMessage(2,"checking motto: %s\n", motto);
-        char em[MottoLen];
-        memcpy(em, motto, sizeof(char) * MottoLen);
-        if (filterData->filter(em, simpleFiltering))
-        {
-            rejectCode = RejectBadMotto;
-            strcpy(rejectMsg, "The motto was rejected. Try a different motto.");
-            return false;
-        }
+        rejectCode = RejectBadMotto;
+        strcpy(rejectMsg, "The motto was rejected. Try a different motto.");
+        return false;
     }
 
     if (token[0] == 0)
@@ -319,6 +313,21 @@ bool PlayerInfo::isCallSignReadable()
     if (!readable)
         errorString = "Callsign rejected. Please use mostly letters and numbers.";
     return readable;
+}
+
+bool PlayerInfo::filterMotto(const char* _motto)
+{
+    if (callSignFiltering)
+    {
+        logDebugMessage(2,"checking motto: %s\n", _motto);
+        char em[sizeof(_motto)];
+        memcpy(em, _motto, sizeof(char) * sizeof(_motto));
+        if (filterData->filter(em, simpleFiltering))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 const char *PlayerInfo::getMotto() const

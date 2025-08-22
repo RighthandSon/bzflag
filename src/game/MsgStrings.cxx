@@ -73,6 +73,7 @@ static MsgStringList handleMsgAlive(PacketInfo *pi);
 static MsgStringList handleMsgAdminInfo(PacketInfo *pi);
 static MsgStringList handleMsgAddPlayer(PacketInfo *pi);
 static MsgStringList handleMsgCaptureFlag(PacketInfo *pi);
+static MsgStringList handleMsgChangeMotto(PacketInfo *pi);
 static MsgStringList handleMsgDropFlag(PacketInfo *pi);
 static MsgStringList handleMsgEnter(PacketInfo *pi);
 static MsgStringList handleMsgExit(PacketInfo *pi);
@@ -132,6 +133,7 @@ static PacketListEntry PacketList[] =
     PACKET_LIST_ENTRY (MsgAdminInfo),
     PACKET_LIST_ENTRY (MsgAddPlayer),
     PACKET_LIST_ENTRY (MsgCaptureFlag),
+    PACKET_LIST_ENTRY (MsgChangeMotto),
     PACKET_LIST_ENTRY (MsgDropFlag),
     PACKET_LIST_ENTRY (MsgEnter),
     PACKET_LIST_ENTRY (MsgExit),
@@ -565,6 +567,22 @@ static MsgStringList handleMsgCaptureFlag (PacketInfo *pi)
     d = nboUnpackUShort (d, team);
     listPush (list, 1, "player: %s", strPlayer(id).c_str());
     listPush (list, 1, "team: %s", strTeam (team).c_str());
+
+    return list;
+}
+
+
+static MsgStringList handleMsgChangeMotto (PacketInfo *pi)
+{
+    MsgStringList list = listMsgBasics (pi);
+
+    const void *d = pi->data;
+    PlayerId id;
+    std::string motto;
+    d = nboUnpackUByte (d, id);
+    d = nboUnpackStdString (d, motto);
+    listPush (list, 1, "player: %s", strPlayer(id).c_str());
+    listPush (list, 1, "motto: %s", motto);
 
     return list;
 }

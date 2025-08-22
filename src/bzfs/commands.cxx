@@ -491,6 +491,15 @@ public:
                              GameKeeper::Player *playerData);
 };
 
+class MottoCommand : ServerCommand
+{
+public:
+    MottoCommand();
+
+    virtual bool operator() (const char *commandLine,
+                             GameKeeper::Player *playerData);
+};
+
 class DebugCommand : ServerCommand
 {
 public:
@@ -559,6 +568,7 @@ static ReplayCommand      replayCommand;
 static SayCommand     sayCommand;
 static CmdList        cmdList;
 static CmdHelp        cmdHelp;
+static MottoCommand     mottoCommand;
 static ModCountCommand    modCountCommand;
 static DebugCommand       debugCommand;
 static OwnerCommand       ownerCommand;
@@ -656,6 +666,8 @@ SayCommand::SayCommand()         : ServerCommand("/say",
             "[message] - generate a public message sent by the server") {}
 DateCommand::DateCommand()       : DateTimeCommand("/date") {}
 TimeCommand::TimeCommand()       : DateTimeCommand("/time") {}
+MottoCommand::MottoCommand()       : ServerCommand("/motto",
+            "[motto] - change your motto on the fly") {}
 ModCountCommand::ModCountCommand() : ServerCommand("/modcount",
             "[+-seconds] - adjust countdown (if any)") {}
 DebugCommand::DebugCommand()         : ServerCommand("/serverdebug",
@@ -3870,6 +3882,50 @@ bool ModCountCommand::operator() (const char* message, GameKeeper::Player *playe
         sendMessage(ServerPlayer, t, reply);
         return true;
     }
+
+    return true;
+}
+
+
+bool MottoCommand::operator() (const char *message, GameKeeper::Player *playerData)
+{
+    size_t messageStart = 0;
+    int t = playerData->getIndex();
+
+    if (!playerData->accessInfo.hasPerm(PlayerAccessInfo::changeMotto) || !playerData->accessInfo.hasPerm(PlayerAccessInfo::showMotto))
+    {
+        sendMessage(ServerPlayer, t, "You do not have permission to run the /motto command");
+        return true;
+    }
+
+    std::string messageText = &message[6];
+
+    //skip any leading whitespace
+    while ((messageStart < messageText.size()) && (isspace(messageText[messageStart])))
+        messageStart++;
+
+    if (messageStart == messageText.size())
+    {
+        sendMessage(ServerPlayer, t, "Usage: /motto your new motto");
+        return true;
+    }
+    messageText.erase(0, messageStart);
+    // make sure the motto is not obscene/filtered
+    if (playerData->player.filterMotto(messageText.c_str()))
+    {
+        sendMessage(ServerPlayer, t, "The motto was rejected. Try a different motto.");
+        return true;
+    }
+    //call an event since motto is updated
+    bz_GetPlayerMottoData_V2 mottoEvent(messageText.c_str());
+    mottoEvent.record = bz_getPlayerByIndex(t);
+    worldEventManager.callEvents(&mottoEvent);
+    playerData->player.setMotto(messageText.c_str());
+
+    void *buf, *bufStart = getDirectMessageBuffer();
+    buf = nboPackUByte(bufStart, t);
+    buf = nboPackStdString(buf, messageText);
+    broadcastMessage(MsgChangeMotto, (char*)buf - (char*)bufStart, bufStart);
 
     return true;
 }

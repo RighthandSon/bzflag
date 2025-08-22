@@ -55,6 +55,7 @@ public:
         antipollkill,
         ban,
         banlist,
+        changeMotto,
         clientQuery,
         countdown,
         date,

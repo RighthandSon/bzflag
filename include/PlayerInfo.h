@@ -91,6 +91,7 @@ public:
     bool  processEnter ( uint16_t &rejectCode, char *rejectMsg );
     const char    *getCallSign() const;
     void      setCallSign(const char * c);
+    bool  filterMotto(const char* motto);
     const char    *getMotto() const;
     void      setMotto(const char* _motto);
     const char    *getToken() const;

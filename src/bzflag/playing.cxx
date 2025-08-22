@@ -2338,6 +2338,23 @@ static void     handleServerMessage(bool human, uint16_t code,
         break;
     }
 
+    case MsgChangeMotto:
+    {
+        std::string motto;
+        PlayerId id;
+        msg = nboUnpackUByte(msg, id);
+        msg = nboUnpackStdString(msg, motto);
+        if (id == myTank->getId())
+        {
+            myTank->setMotto(motto.c_str());
+        }
+        else
+        {
+            remotePlayers[id]->setMotto(motto.c_str());
+        }
+        break;
+    }
+
     case MsgTeamUpdate:
     {
         uint8_t  numTeams;
